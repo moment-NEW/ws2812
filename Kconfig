@@ -1,0 +1,67 @@
+# Kconfig file for package ws2812
+menuconfig PKG_USING_WS2812
+    bool "ws2812: WS2812 RGB LED driver using SPI"
+    select RT_USING_SPI
+    select RT_USING_HEAP
+    default n
+
+if PKG_USING_WS2812
+
+    config PKG_WS2812_PATH
+        string
+        default "/packages/peripherals/ws2812"
+
+    choice
+        prompt "Version"
+        default PKG_USING_WS2812_LATEST_VERSION
+        help
+            Select the package version
+
+        config PKG_USING_WS2812_LATEST_VERSION
+            bool "latest"
+    endchoice
+
+    config PKG_WS2812_VER
+        string
+        default "latest"    if PKG_USING_WS2812_LATEST_VERSION
+
+    config PKG_WS2812_SPI_BUS_NAME
+        string "SPI bus name attached to WS2812"
+        default "spi6"
+        help
+            The RT-Thread SPI bus name the WS2812 data line is connected to.
+            The bus must be enabled in the BSP (e.g. BSP_USING_SPI6).
+
+    config PKG_WS2812_SPI_FREQUENCY
+        int "Requested SPI frequency (Hz)"
+        range 1000000 10000000
+        default 4000000
+        help
+            Maximum SPI clock requested from RT-Thread. The actual SCK depends
+            on the bus clock and divider. For an STM32H7 SPI6 (BDMA capable)
+            requesting 4000000 typically yields a 6250000 Hz SCK, which works
+            well with the default 8-bit encoding.
+
+    config PKG_WS2812_LED_NUM
+        int "Number of WS2812 LEDs"
+        range 1 1024
+        default 1
+
+    config PKG_WS2812_USING_BDMA_BUFFER
+        bool "Use a static BDMA buffer in the .ws2812_bdma section"
+        default n
+        help
+            STM32H7 BDMA (D3 domain) can only access SRAM4. Enable this only
+            when the SPI bus TX path runs on BDMA AND the BSP reserves the
+            .ws2812_bdma section in SRAM4 in its linker scripts
+            (e.g. stm32h723-DM-MC02 does). Otherwise the heap buffer is used.
+
+    config PKG_WS2812_USING_CLK_DEBUG
+        bool "Log the actual SPI6 SCK at runtime (STM32H7 only)"
+        default n
+
+    config PKG_WS2812_USING_EXAMPLE
+        bool "Enable example"
+        default n
+
+endif
